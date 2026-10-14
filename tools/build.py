@@ -178,6 +178,14 @@ D_vol = vol([("ארון מעל המגדל", (62, 60, TOP - 185), False, 0), ("ש
              ("ארונות גבוהים בקיר השמאלי", (214, 40, TOP), True, 0), UF, LOFT_DOOR])
 
 
+E_vol = vol([("מגירות בבסיס המוגבה", (124, 65, 36), True, 0), ("ארון עליון מעל המכונות", (124, 40, TOP - 140), True, 0),
+             ("שולף צר עד התקרה", (22, 68, TOP), True, 0), ("שולף מגשים במשטח", (11, 55, 80), True, 0),
+             ("ארונות עליונים מעל המשטח הפעיל", (130, 35, TOP - 145), True, 0), ("ארון צר בקיר השמאלי", (30, 56, 215), True, 0),
+             ("ארון עמוק מעל המקפיא", (66, 60, TOP - 165), False, 0),
+             ("2 פינות עיוורות מתחת למשטח (72×58×80 כל אחת)", (144, 58, 80), False, 0),
+             ("ארונות עליונים בפינות", (144, 35, TOP - 145), False, 0), ("בוידעם קיר שמאל", (126, 50, 30), False, 0)])
+
+
 def approx(v):
     return f"≈{int(round(v / 50.0) * 50):,}"
 
@@ -334,6 +342,51 @@ D_e1 = elev(274, [
 ], "חלופה ד׳ – חזית הקיר הימני", [85, 135, 172, 245])
 
 
+# =============== Option E: B with the freezer on the door wall and a full right-wall unit ===============
+E_plan = plan([
+    zone(30, 72, 154, 202, "שטח פנוי 124 × 130"),
+    item("store", 0, 202, 22, 274, "שולף", size=6),
+    item("machine", 22, 202, 84, 274, "כביסה", "מוגבהת 40", port=True),
+    item("machine", 84, 202, 146, 274, "מייבש", "מוגבה 40", port=True),
+    item("freezer", 82, 2, 142, 72, "מקפיא", "60×70 · 155"),
+    swing(82, 72, 142, 72, 82, 132),
+    item("counter", 154, 0, 214, 274),
+    item("upper2", 157, 3, 211, 69, "פינה עיוורת", "מכסה במשטח", size=6),
+    item("upper2", 157, 205, 211, 271, "פינה עיוורת", "מכסה במשטח", size=6),
+    item("basket", 156, 75, 200, 110, "סל", size=6),
+    item("basket", 156, 114, 200, 149, "סל", size=6),
+    item("basket", 156, 153, 200, 188, "סל", size=6),
+    item("store", 156, 191, 211, 201),
+    item("store", 0, 76, 30, 132, "ארון צר", size=5.5),
+    item("loft", 0, 140, 50, 202, "בוידעם", "גובה 215+", size=5.5),
+    fan(20, 40),
+    dim(30, 92, 154, 92, "124"),
+    dim(142, 72, 142, 202, "130"),
+], "חלופה ה׳ – תכנית")
+
+E_e1 = elev(274, [
+    e("base", 0, 274, 0, 87),
+    e("upper2", 2, 70, 4, 84, "פינה עיוורת", "מכסה במשטח", size=6),
+    e("upper2", 204, 272, 4, 84, "פינה עיוורת", "מכסה במשטח", size=6),
+    baskets([86, 125, 164]),
+    e("store", 73, 83, 6, 84),
+    e("counter", 0, 274, 87, 90),
+    e("upper2", 0, 72, 145, TOP, "פינה", size=6),
+    e("store", 72, 202, 145, TOP, "ארונות עליונים (עומק 35)"),
+    e("upper2", 202, 274, 145, TOP, "פינה", size=6),
+    note(137, 95, "משטח לכל אורך הקיר · גובה 90 · 130 ס״מ פעילים"),
+], "חלופה ה׳ – חזית הקיר הימני", [57, 90, 145, 245])
+
+E_e2 = elev(214, [
+    e("base", 0, 60, 0, 87), e("counter", 0, 60, 87, 90),
+    e("upper2", 0, 35, 145, TOP, "", size=6),
+    e("freezer", 72, 132, 0, 155, "מקפיא"),
+    e("upper2", 66, 132, 165, TOP, "ארון עמוק", size=6),
+    door_open(134, 214),
+    efan(174, 194),
+], "חלופה ה׳ – חזית קיר הדלת", [87, 155, 210, 245])
+
+
 # ---------- 3D scene data ----------
 # Each entry: ["b", kind, x0, y0, z0, x1, y1, z1] (room coords, z = height) or
 # ["port", face, cx, cy, cz] or ["person", x, y].
@@ -368,6 +421,8 @@ def freezer3(x0, y0, x1, y1, face, handle_at):
     out = [B3("freezer", x0, y0, 0, x1, y1, 155)]
     if face == "x-":
         out.append(B3("trim", x0 - 3, handle_at, 85, x0, handle_at + 2.5, 145))
+    elif face == "y+":
+        out.append(B3("trim", handle_at, y1, 85, handle_at + 2.5, y1 + 3, 145))
     else:
         out.append(B3("trim", handle_at, y0 - 3, 85, handle_at + 2.5, y0, 145))
     return out
@@ -449,7 +504,25 @@ SC_D = (
     + fan3(100, 120)
     + [["person", 92, 100]]
 )
-SCENES = json.dumps({"a": SC_A, "b": SC_B, "c": SC_C, "d": SC_D}, separators=(",", ":"))
+SC_E = (
+    cab(0, 202, 0, 22, 272, TOP, 1)
+    + cab(22, 202, 0, 146, 274, 40, 2, "x")
+    + machine3(23, 202, 83, 264, 40, 85, "y-") + machine3(85, 202, 145, 264, 40, 85, "y-")
+    + cab(22, 234, 140, 146, 274, TOP, 4, "x")
+    + freezer3(82, 2, 142, 72, "y+", 137)
+    + cab(82, 0, 165, 148, 60, TOP, 1)
+    + [B3("counter", 154, 0, 87, 214, 274, 90), B3("cab", 154, 0, 0, 214, 72, 87), B3("cab", 154, 202, 0, 214, 274, 87)]
+    + [B3("cab", 154, 72, 0, 214, 191, 6)]
+    + [B3("cab", 154, a, 6, 214, a + 2, 87) for a in (72, 111.5, 150.5)]
+    + [B3("basket", 156, a, 6, 200, a + 35, 63) for a in (75, 114, 153)]
+    + cab(154, 189.5, 0, 214, 202, 87, 1)
+    + cab(179, 0, 145, 214, 274, TOP, 7, "y")
+    + cab(0, 76, 0, 30, 132, 215, 1)
+    + loft3(0, 140, 50, 202, [(5, 145, 215, 45, 198, 238)])
+    + fan3(20, 40)
+    + [["person", 100, 150]]
+)
+SCENES = json.dumps({"a": SC_A, "b": SC_B, "c": SC_C, "d": SC_D, "e": SC_E}, separators=(",", ":"))
 
 LEGEND = "".join(
     f'<span class="lg"><svg viewBox="0 0 14 10" aria-hidden="true"><rect class="k-{k}" x="1" y="1" width="12" height="8" rx="1"/></svg>{t}</span>'
@@ -478,7 +551,25 @@ def option(oid, letter, name, tag, desc, drawings, pros, cons, volume, extra="")
 
 
 OPTS = "".join([
-    option("a", "א", "גלריה: מכונות מוגבהות מול משטח הקיפול", '<span class="badge">מומלץ</span>',
+    option("e", "ה", "ב׳ משודרגת: מקפיא ליד הדלת וקיר ארונות ימני", '<span class="badge">מומלץ</span><span class="badge soft">ההצעה שלך</span>',
+           "המכונות נשארות מוגבהות על הקיר האחורי, כמו בחלופה ב׳. המקפיא עובר לקיר הדלת, צמוד מימין לדלת, עם ציר בצד הקרוב לדלת. "
+           "לאורך כל הקיר הימני (274) יש יחידה רציפה בעומק 60: ארון בסיס עם משטח בגובה 90, 3 סלים במרכז, ומעליה ארונות עליונים עד התקרה. "
+           "בקיר השמאלי יש ארון צר לשואב, לקרש גיהוץ ולמטאטא, ומעליו בוידעם.",
+           [("תכנית (מבט מלמעלה)", E_plan), ("חזית הקיר הימני: יחידה רציפה", E_e1), ("חזית קיר הדלת: מקפיא ודלת", E_e2)],
+           ["מכונות מוגבהות זו לצד זו, ו-130 ס״מ פנויים מולן (בחלופה א׳ יש 92).",
+            f"נפח האחסון הכולל ({approx(E_vol[1])} ליטר) כמו בחלופה א׳, ושתיהן מובילות.",
+            "המקפיא ראשון בכניסה, ומי שבא רק להוציא משהו מהמקפיא לא נכנס לאזור העבודה.",
+            "המייבש צמוד למשטח: מוציאים, מסתובבים רבע סיבוב ומקפלים לתוך הסל.",
+            "שתי פינות עיוורות בגודל 72×58×80 מתאימות בדיוק למזוודות ולציוד עונתי."],
+           [f"כ-{approx(E_vol[2])[1:]} ליטר מהאחסון בגישה פחות נוחה: פינות עיוורות, ארון מעל המקפיא ובוידעם. בחלופה א׳ יש כ-450 ליטר כאלה.",
+            "קטע העבודה המלא של המשטח הוא 130 ס״מ (בחלופה א׳: 212). בקצוות יש עוד משטח להנחת דברים.",
+            "דלת המקפיא הפתוחה חוסמת לרגע את המעבר מהכניסה.",
+            "אין מקום לסל רביעי."],
+           E_vol,
+           '<div class="note"><b>למה יש פינות עיוורות?</b> המקפיא עומד 12 ס״מ מהיחידה הימנית, אז לפינה שמאחוריו אי אפשר לפתוח דלת מלפנים. '
+           'בפינה האחורית המייבש צמוד ליחידה, ושם אותו מצב. הפתרון הוא חלק במשטח שמתרומם על צירים, כך שהפינה נפתחת מלמעלה כמו ארגז. '
+           'זה מקום טוב למזוודות, לציוד חגים ולמלאי של חומרי ניקוי. בקיר השמאלי הארון הצר מתחיל רק 76 ס״מ מהדלת, כדי שלא ייווצר צוואר בקבוק מול המקפיא.</div>'),
+    option("a", "א", "גלריה: מכונות מוגבהות מול משטח הקיפול", '<span class="badge soft">הכי הרבה אחסון נוח</span>',
            "לאורך הקיר הימני (274): המקפיא ראשון ליד הכניסה, אחריו מכונת הכביסה והמייבש על בסיס מוגבה 40 ס״מ עם מגירות, "
            "ובפינה האחורית ארון גבוה 80×70 עד התקרה. לאורך הקיר השמאלי: משטח קיפול 212×50 בגובה 90 עם כנף מתקפלת של 20 ס״מ "
            "(70 ס״מ עומק בזמן קיפול), 3 תאי סלים ומגירות מתחתיו. מעל: ארונות מעל המכונות, מעל המשטח ומעל המקפיא, ובוידעם מעל הדלת.",
@@ -538,18 +629,19 @@ OPTS = "".join([
            D_vol),
 ])
 
-v = {k: x for k, x in zip("abcd", (A_vol, B_vol, C_vol, D_vol))}
+v = {k: x for k, x in zip("eabcd", (E_vol, A_vol, B_vol, C_vol, D_vol))}
 best = max(v, key=lambda k: v[k][1])
 worst = min(v, key=lambda k: v[k][1])
-VOL_ROW = "".join(f'<td class="num{" best" if k == best else " weak" if k == worst else ""}">{approx(v[k][1])} ל׳</td>' for k in "abcd")
-HARD_ROW = "".join(f'<td class="num">{approx(v[k][2])} ל׳</td>' for k in "abcd")
+VOL_ROW = "".join(f'<td class="num{" best" if k == best else " weak" if k == worst else ""}">{approx(v[k][1])} ל׳</td>' for k in "eabcd")
+HARD_ROW = "".join(f'<td class="num">{approx(v[k][2])} ל׳</td>' for k in "eabcd")
 
 VIEW3D = '''
   <section class="sheet" id="view3d">
     <h2>הדמיה תלת-ממדית</h2>
     <div class="v3-bar">
       <div class="seg" role="group" aria-label="חלופה">
-        <button type="button" id="v3-a" data-opt="a" aria-pressed="true">א׳ גלריה</button>
+        <button type="button" id="v3-e" data-opt="e" aria-pressed="true">ה׳ ב׳ משודרגת</button>
+        <button type="button" id="v3-a" data-opt="a" aria-pressed="false">א׳ גלריה</button>
         <button type="button" id="v3-b" data-opt="b" aria-pressed="false">ב׳ מול הדלת</button>
         <button type="button" id="v3-c" data-opt="c" aria-pressed="false">ג׳ מתחת למשטח</button>
         <button type="button" id="v3-d" data-opt="d" aria-pressed="false">ד׳ מגדל</button>
@@ -686,7 +778,7 @@ JS3D = r'''
     return g;
   }
 
-  let group = null, personObj = null, current = 'a';
+  let group = null, personObj = null, current = 'e';
   const personToggle = document.getElementById('v3-person');
   const hideUpper = document.getElementById('v3-upper');
   function build(opt) {
@@ -743,7 +835,7 @@ JS3D = r'''
   personToggle.addEventListener('change', () => { if (personObj) personObj.visible = personToggle.checked; });
   hideUpper.addEventListener('change', () => group.children.forEach(m => { if (m.userData.upper) m.visible = !hideUpper.checked; }));
 
-  build('a'); setCam('door');
+  build('e'); setCam('door');
   (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
 })();
 </script>'''.replace("__SCENES__", SCENES)
@@ -886,14 +978,14 @@ details[open] summary {{ margin-bottom: 8px; }}
 <main dir="rtl" lang="he">
   <header style="display:grid;gap:10px">
     <h1>תכנון חדר הכביסה</h1>
-    <p class="lede">חדר נטו <span class="mono">214×274</span> ס״מ (5.86 מ״ר), תקרה <span class="mono">247</span>. ארבע חלופות סידור, כולן משורטטות בקנה מידה ומוצגות גם בהדמיה תלת-ממדית, עם מעלות, חסרונות ונפח אחסון.</p>
+    <p class="lede">חדר נטו <span class="mono">214×274</span> ס״מ (5.86 מ״ר), תקרה <span class="mono">247</span>. חמש חלופות סידור, כולן משורטטות בקנה מידה ומוצגות גם בהדמיה תלת-ממדית, עם מעלות, חסרונות ונפח אחסון.</p>
   </header>
 
-  <div class="rec"><p><b>ההמלצה: חלופה א׳ (גלריה).</b> מקפיא, מכונת כביסה ומייבש מוגבהים 40 ס״מ לאורך הקיר הימני, משטח קיפול באורך 212 עם 3 סלים לאורך הקיר השמאלי, וארון גבוה בפינה האחורית.
-  זו החלופה היחידה שעומדת בכל הדרישות עם מכונות מוגבהות זו לצד זו, והיא גם נותנת את נפח האחסון הגדול ביותר ({approx(A_vol[1])} ליטר).
-  אם חשוב לך מרחב פתוח יותר על חשבון אחסון, חלופה ב׳ היא השנייה בדירוג.</p></div>
+  <div class="rec"><p><b>ההמלצה: חלופה ה׳ (ב׳ משודרגת, ההצעה שלך).</b> המכונות מוגבהות על הקיר האחורי עם 130 ס״מ פנויים מולן. המקפיא מימין לדלת, ולאורך כל הקיר הימני יש יחידה רציפה של משטח, 3 סלים וארונות עד התקרה.
+  נפח האחסון הכולל ({approx(E_vol[1])} ליטר) זהה כמעט לחלופה א׳, ושתיהן מובילות. חלק גדול ממנו בפינות שהגישה אליהן פחות נוחה, וזה מתאים למזוודות ולציוד עונתי.
+  אם חשוב לך יותר אחסון בגישה נוחה ומשטח ארוך יותר, ומוכן לוותר על מרווח, חלופה א׳ עדיפה.</p></div>
 
-  <nav aria-label="תוכן"><a href="#view3d">הדמיה תלת-ממדית</a><a href="#basis">נתונים</a><a href="#height">גובה ההגבהה</a><a href="#a">א׳ גלריה</a><a href="#b">ב׳ מול הדלת</a><a href="#c">ג׳ מתחת למשטח</a><a href="#d">ד׳ מגדל</a><a href="#compare">השוואה</a><a href="#build">ביצוע</a></nav>
+  <nav aria-label="תוכן"><a href="#view3d">הדמיה תלת-ממדית</a><a href="#basis">נתונים</a><a href="#height">גובה ההגבהה</a><a href="#e">ה׳ ב׳ משודרגת</a><a href="#a">א׳ גלריה</a><a href="#b">ב׳ מול הדלת</a><a href="#c">ג׳ מתחת למשטח</a><a href="#d">ד׳ מגדל</a><a href="#compare">השוואה</a><a href="#build">ביצוע</a></nav>
 
   {VIEW3D}
 
@@ -934,16 +1026,16 @@ details[open] summary {{ margin-bottom: 8px; }}
   <section class="sheet" id="compare">
     <h2>השוואה</h2>
     <div class="scroll"><table class="cmp">
-      <thead><tr><th></th><th>א׳ גלריה</th><th>ב׳ מול הדלת</th><th>ג׳ מתחת למשטח</th><th>ד׳ מגדל</th></tr></thead>
+      <thead><tr><th></th><th>ה׳ ב׳ משודרגת</th><th>א׳ גלריה</th><th>ב׳ מול הדלת</th><th>ג׳ מתחת למשטח</th><th>ד׳ מגדל</th></tr></thead>
       <tbody>
-        <tr><td>סידור המכונות</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="weak">על הרצפה</td><td class="weak">זו מעל זו</td></tr>
-        <tr><td>מרווח מול המכונות</td><td class="num">92</td><td class="num best">142</td><td class="num">102</td><td class="num">102</td></tr>
-        <tr><td>משטח קיפול</td><td class="num">212×50 (+20)</td><td class="num">134×60</td><td class="num best">208×72</td><td class="num">140×64</td></tr>
-        <tr><td>סלים במקום ייעודי</td><td>3, אפשר 4</td><td>3</td><td>2+1 בארון</td><td>3</td></tr>
+        <tr><td>סידור המכונות</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="weak">על הרצפה</td><td class="weak">זו מעל זו</td></tr>
+        <tr><td>מרווח מול המכונות</td><td class="num">130</td><td class="num">92</td><td class="num best">142</td><td class="num">102</td><td class="num">102</td></tr>
+        <tr><td>משטח קיפול</td><td class="num">130×60 + קצוות</td><td class="num">212×50 (+20)</td><td class="num">134×60</td><td class="num best">208×72</td><td class="num">140×64</td></tr>
+        <tr><td>סלים במקום ייעודי</td><td>3</td><td>3, אפשר 4</td><td>3</td><td>2+1 בארון</td><td>3</td></tr>
         <tr><td>נפח אחסון משוער</td>{VOL_ROW}</tr>
         <tr><td>מתוכו בגישה פחות נוחה</td>{HARD_ROW}</tr>
-        <tr><td>תחושת מרחב</td><td>בינונית</td><td class="best">גבוהה</td><td>טובה</td><td>טובה</td></tr>
-        <tr><td>מורכבות ועלות נגרות</td><td>בינונית-גבוהה</td><td>בינונית</td><td class="best">נמוכה</td><td>בינונית</td></tr>
+        <tr><td>תחושת מרחב</td><td class="best">גבוהה</td><td>בינונית</td><td class="best">גבוהה</td><td>טובה</td><td>טובה</td></tr>
+        <tr><td>מורכבות ועלות נגרות</td><td>בינונית-גבוהה</td><td>בינונית-גבוהה</td><td>בינונית</td><td class="best">נמוכה</td><td>בינונית</td></tr>
       </tbody></table></div>
     <p class="src">הנפחים הם ברוטו (מידות חוץ של הארונות), ומיועדים להשוואה בין החלופות. הנפח השימושי יהיה קטן בכ-15–20%.</p>
   </section>
