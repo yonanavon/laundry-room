@@ -186,6 +186,12 @@ E_vol = vol([("מגירות בבסיס המוגבה", (124, 65, 36), True, 0), (
              ("ארונות עליונים בפינות", (144, 35, TOP - 145), False, 0), ("בוידעם קיר שמאל", (126, 50, 30), False, 0)])
 
 
+F_vol = vol([("מגירות בבסיס המוגבה", (124, 65, 36), True, 0), ("ארון עליון מעל המכונות", (124, 40, TOP - 140), True, 0),
+             ("ארון גבוה בפינה ליד הכניסה", (80, 68, TOP), True, 0), ("מגירות במשטח", (83, 48, 80), True, 0),
+             ("ארונות עליונים מעל המשטח", (194, 35, TOP - 145), True, 0),
+             ("ארון עמוק מעל המקפיא", (62, 60, TOP - 165), False, 0), ("בוידעם מעל הכניסה", (86, 50, 30), False, 0)])
+
+
 def approx(v):
     return f"≈{int(round(v / 50.0) * 50):,}"
 
@@ -400,6 +406,49 @@ E_e2 = elev(214, [
 ], "חלופה ה׳ – חזית קיר הדלת", [87, 155, 210, 245])
 
 
+# =============== Option F: machines on the left (kitchen) wall ===============
+F_plan = plan([
+    zone(72, 86, 164, 274, "מעבר 92"),
+    item("freezer", 0, 86, 72, 148, "מקפיא", "60×70 · 155"),
+    swing(72, 86, 72, 146, 132, 86),
+    item("machine", 0, 150, 72, 212, "כביסה", "מוגבהת 40", port=True),
+    item("machine", 0, 212, 72, 274, "מייבש", "מוגבה 40", port=True),
+    item("store", 144, 0, 214, 80, "ארון גבוה", "80×70 · עד התקרה"),
+    item("counter", 164, 80, 214, 274),
+    item("store", 166, 82, 211, 139, "מגירות", size=6),
+    item("basket", 166, 141, 210, 176, "סל", size=6),
+    item("basket", 166, 178, 210, 213, "סל", size=6),
+    item("basket", 166, 215, 210, 250, "סל", size=6),
+    item("store", 166, 253, 211, 272),
+    f'<line class="flap" x1="162" y1="{ry(84)}" x2="162" y2="{ry(270)}"/>',
+    item("loft", 0, 0, 50, 86, "בוידעם", "גובה 215+", size=5.5),
+    fan(100, 120),
+    dim(72, 196, 164, 196, "92"),
+], "חלופה ו׳ – תכנית")
+
+F_e1 = elev(274, [
+    e("loft", 0, 86, 215, TOP, "בוידעם מעל הכניסה", size=5.5),
+    e("freezer", 87, 147, 0, 155, "מקפיא"),
+    e("upper2", 86, 148, 165, TOP, "ארון עמוק", size=6),
+    plinth(150, 212), plinth(212, 274),
+    e("machine", 150, 212, 40, 125, "כביסה", port=True),
+    e("machine", 212, 274, 40, 125, "מייבש", port=True),
+    e("store", 150, 274, 140, TOP, "ארון עליון (עומק 40)"),
+    note(212, 62, "מרכז הפתח ≈88", 6.5),
+], "חלופה ו׳ – חזית הקיר השמאלי (המכונות)", [40, 88, 125, 140, 155, 245])
+
+F_e2 = elev(274, [
+    e("base", 0, 194, 0, 87),
+    baskets([24, 61, 98]),
+    e("store", 2, 22, 6, 84),
+    e("store", 135, 192, 6, 84, "מגירות", size=6),
+    e("counter", 0, 194, 87, 90),
+    e("store", 0, 194, 145, TOP, "ארונות עליונים (עומק 35)"),
+    e("store", 194, 274, 0, TOP, "ארון גבוה", "80×70"),
+    note(97, 95, "משטח 194 · גובה 90 · כנף מתקפלת 20"),
+], "חלופה ו׳ – חזית הקיר הימני (משטח וארונות)", [57, 90, 145, 245])
+
+
 # ---------- 3D scene data ----------
 # Each entry: ["b", kind, x0, y0, z0, x1, y1, z1] (room coords, z = height) or
 # ["port", face, cx, cy, cz] or ["person", x, y].
@@ -425,6 +474,8 @@ def machine3(x0, y0, x1, y1, z0, h, face):
     out = [B3("machine", x0, y0, z0, x1, y1, z1)]
     if face == "x-":
         out += [B3("panel", x0 - 0.6, y0 + 2, z1 - 12, x0, y1 - 2, z1 - 2), ["port", face, x0, (y0 + y1) / 2, z0 + 48]]
+    elif face == "x+":
+        out += [B3("panel", x1, y0 + 2, z1 - 12, x1 + 0.6, y1 - 2, z1 - 2), ["port", face, x1, (y0 + y1) / 2, z0 + 48]]
     else:
         out += [B3("panel", x0 + 2, y0 - 0.6, z1 - 12, x1 - 2, y0, z1 - 2), ["port", face, (x0 + x1) / 2, y0, z0 + 48]]
     return out
@@ -434,6 +485,8 @@ def freezer3(x0, y0, x1, y1, face, handle_at):
     out = [B3("freezer", x0, y0, 0, x1, y1, 155)]
     if face == "x-":
         out.append(B3("trim", x0 - 3, handle_at, 85, x0, handle_at + 2.5, 145))
+    elif face == "x+":
+        out.append(B3("trim", x1, handle_at, 85, x1 + 3, handle_at + 2.5, 145))
     elif face == "y+":
         out.append(B3("trim", handle_at, y1, 85, handle_at + 2.5, y1 + 3, 145))
     else:
@@ -535,7 +588,25 @@ SC_E = (
     + fan3(20, 40)
     + [["person", 100, 150]]
 )
-SCENES = json.dumps({"a": SC_A, "b": SC_B, "c": SC_C, "d": SC_D, "e": SC_E}, separators=(",", ":"))
+SC_F = (
+    freezer3(2, 87, 72, 147, "x+", 142)
+    + cab(0, 86, 165, 60, 148, TOP, 1)
+    + cab(0, 150, 0, 72, 274, 40, 2, "y")
+    + machine3(10, 151, 72, 211, 40, 85, "x+") + machine3(10, 213, 72, 273, 40, 85, "x+")
+    + cab(0, 150, 140, 40, 274, TOP, 4, "y")
+    + cab(144, 0, 0, 214, 80, TOP, 2, "y")
+    + [B3("counter", 164, 80, 87, 214, 274, 90), B3("counter", 162, 84, 67, 164, 270, 87)]
+    + cab(166, 80, 0, 214, 140, 87, 3, "z")
+    + [B3("cab", 166, 140, 0, 214, 253, 6)]
+    + [B3("cab", 166, a, 6, 214, a + 2, 87) for a in (140, 177, 214, 251)]
+    + [B3("basket", 167, a, 6, 211, a + 35, 63) for a in (142, 179, 216)]
+    + cab(166, 253, 0, 214, 274, 87, 1)
+    + cab(179, 80, 145, 214, 274, TOP, 5, "y")
+    + loft3(0, 0, 50, 86, [(4, 8, 215, 46, 62, 238)])
+    + fan3(100, 120)
+    + [["person", 118, 182]]
+)
+SCENES = json.dumps({"f": SC_F, "a": SC_A, "b": SC_B, "c": SC_C, "d": SC_D, "e": SC_E}, separators=(",", ":"))
 
 LEGEND = "".join(
     f'<span class="lg"><svg viewBox="0 0 14 10" aria-hidden="true"><rect class="k-{k}" x="1" y="1" width="12" height="8" rx="1"/></svg>{t}</span>'
@@ -564,7 +635,25 @@ def option(oid, letter, name, tag, desc, drawings, pros, cons, volume, extra="")
 
 
 OPTS = "".join([
-    option("e", "ה", "ב׳ משודרגת: מקפיא ליד הדלת וקיר ארונות ימני", '<span class="badge">מומלץ</span><span class="badge soft">ההצעה שלך</span>',
+    option("f", "ו", "מכונות על הקיר השמאלי, מול משטח לכל אורך הקיר הימני", '<span class="badge">מומלץ</span>',
+           "לאורך הקיר השמאלי, אחרי אזור הכניסה (86 ס״מ): המקפיא, ואחריו מכונת כביסה ומייבש על בסיס מוגבה 40 עם מגירות. "
+           "בקיר הימני: ארון גבוה 80×70 בפינה הקרובה לדלת, ומשטח קיפול 194×50 בגובה 90 עם כנף מתקפלת של 20 ס״מ, מגירות ו-3 סלים מתחתיו. "
+           "מעל הכול ארונות עד התקרה, ובוידעם מעל אזור הכניסה.",
+           [("תכנית (מבט מלמעלה)", F_plan), ("חזית הקיר השמאלי: מקפיא ומכונות", F_e1), ("חזית הקיר הימני: משטח, סלים וארון גבוה", F_e2)],
+           ["המכונות רחוקות מחדר השינה. לפי התרשים מעבר לקיר השמאלי יש מטבח עם כיור, אז הרעש והרעידות עוברים לשם, וקווי המים והניקוז קרובים.",
+            "בקיר שמשותף לחדר השינה יש רק ארונות ומשטח, והם גם מבודדים רעש.",
+            f"אחסון רב בגישה נוחה: כ-{approx(F_vol[1] - F_vol[2])[1:]} ליטר (בחלופה ה׳ כ-2,000), ורק כ-{approx(F_vol[2])[1:]} ליטר בגישה פחות נוחה.",
+            "משטח של 194 ס״מ מול המכונות. מוציאים מהמייבש, מסתובבים ומקפלים.",
+            "המקפיא קרוב לכניסה, והארון הגבוה ליד הדלת נוח לשואב ולמטאטא.",
+            "בלי פינות עיוורות, ושום פריט לא חוסם פריט אחר."],
+           ["מעבר של 92 ס״מ מול המכונות, כמו בחלופה א׳. עם ארגז כביסה שקוע בקיר הוא גדל ל-97.",
+            "כשהכנף פתוחה המעבר יורד ל-72 ס״מ, וזה בסדר בזמן קיפול.",
+            "המכונות בעומק החדר. כדי להגיע אליהן עוברים ליד המקפיא, ודלת המקפיא הפתוחה חוסמת לרגע את המעבר.",
+            f"נפח כולל של {approx(F_vol[1])} ליטר, מעט פחות מחלופות א׳ וה׳ (כ-3,700)."],
+           F_vol,
+           '<div class="note"><b>אזור הכניסה.</b> המקפיא מתחיל 86 ס״מ מקיר הדלת, כדי שיהיה מקום להיכנס ולפנות ימינה. מעל האזור הזה יש רק בוידעם בגובה 215, כדי שלא יהיה ארון בגובה הראש. '
+           'את ציר המקפיא שמים בצד הקרוב לדלת, כך שהדלת שלו נפתחת לכיוון הכניסה ולא לכיוון המכונות.</div>'),
+    option("e", "ה", "ב׳ משודרגת: מקפיא ליד הדלת וקיר ארונות ימני", '<span class="badge soft">הכי מרווח עם אחסון</span>',
            "המכונות נשארות מוגבהות על הקיר האחורי, כמו בחלופה ב׳. המקפיא עובר לקיר הדלת, צמוד מימין לדלת, עם ציר בצד הקרוב לדלת. "
            "לאורך כל הקיר הימני (274) יש יחידה רציפה בעומק 60: ארון בסיס עם משטח בגובה 90, 3 סלים במרכז, ומעליה ארונות עליונים עד התקרה. "
            "בקיר השמאלי יש ארון צר לשואב, לקרש גיהוץ ולמטאטא, ומעליו בוידעם.",
@@ -573,7 +662,7 @@ OPTS = "".join([
             f"נפח האחסון הכולל ({approx(E_vol[1])} ליטר) כמו בחלופה א׳, ושתיהן מובילות.",
             "המקפיא ראשון בכניסה, ומי שבא רק להוציא משהו מהמקפיא לא נכנס לאזור העבודה.",
             "המייבש צמוד למשטח: מוציאים, מסתובבים רבע סיבוב ומקפלים לתוך הסל.",
-            "שתי פינות עיוורות בגודל 72×58×80 מתאימות בדיוק למזוודות ולציוד עונתי."],
+            "שתי פינות עיוורות בגודל 72×58×80 מתאימות בדיוק למזוודות ולציוד עונתי.", "בקיר שמשותף לחדר השינה יש רק ארונות, והם גם מבודדים רעש."],
            [f"כ-{approx(E_vol[2])[1:]} ליטר מהאחסון בגישה פחות נוחה: פינות עיוורות, ארון מעל המקפיא ובוידעם. בחלופה א׳ יש כ-450 ליטר כאלה.",
             "קטע העבודה המלא של המשטח הוא 130 ס״מ (בחלופה א׳: 212). בקצוות יש עוד משטח להנחת דברים.",
             "דלת המקפיא הפתוחה חוסמת לרגע את המעבר מהכניסה.",
@@ -594,7 +683,7 @@ OPTS = "".join([
             "המקפיא ראשון בכניסה, כך שמי שבא להוציא משהו מהמקפיא לא נכנס לאזור העבודה.",
             "משטח 212 ס״מ, הרבה מעבר ל-120 הנדרשים. אפשר גם להוסיף סל רביעי במקום חלק מהמגירות.",
             "שום פריט לא חוסם פריט אחר."],
-           ["מעבר של 92 ס״מ מול המכונות: עומד במינימום המקובל (90) אבל לא מרווח, ושני אנשים לא יעברו בו בנוחות.",
+           ["מעבר לקיר הימני יש חדר שינה, ולפי התרשים המיטה צמודה לקיר. המכונות על הקיר הזה יעבירו רעש ורעידות בסחיטה, ולכן צריך רגליות בולמות ובידוד אקוסטי.", "מעבר של 92 ס״מ מול המכונות: עומד במינימום המקובל (90) אבל לא מרווח, ושני אנשים לא יעברו בו בנוחות.",
             "כשהכנף פתוחה המעבר יורד ל-72 ס״מ. זה בסדר בזמן קיפול, ומקפלים אותה בסיום.",
             "הארון שמעל המקפיא עמוק וגבוה, ומתאים רק לדברים שמוציאים לעיתים רחוקות.",
             "דורש נגרות בהתאמה: בסיס מוגבה יציב ומשטח עם תאי סלים."],
@@ -624,7 +713,7 @@ OPTS = "".join([
             "מעבר של 102 ס״מ.",
             "פשוט וזול יותר: אין צורך בבסיס מוגבה.",
             "קיר שלם של ארונות גבוהים בעומק נוח (40)."],
-           ["המכונות בגובה הרצפה, ולכן צריך להתכופף בכל טעינה ופריקה.",
+           ["מעבר לקיר הימני יש חדר שינה, ולפי התרשים המיטה צמודה לקיר. המכונות על הקיר הזה יעבירו רעש ורעידות בסחיטה, ולכן צריך רגליות בולמות ובידוד אקוסטי.", "המכונות בגובה הרצפה, ולכן צריך להתכופף בכל טעינה ופריקה.",
             "מקפלים מעל מכונות שרועדות בזמן סחיטה.",
             "רק 2 סלים מתחת למשטח, והשלישי בארון שממול.",
             "בעומק 72 קשה להגיע לארונות העליונים."],
@@ -636,24 +725,25 @@ OPTS = "".join([
            ["3 סלים מתחת למשטח, ומשטח נפרד מהמכונות.",
             "מעבר של 102 ס״מ.",
             f"נפח אחסון טוב ({approx(D_vol[1])} ליטר)."],
-           ["מכונת הכביסה על הרצפה (כפיפה), ופתח המייבש בגובה כ-135 ס״מ, כלומר פריקה בגובה החזה.",
+           ["מעבר לקיר הימני יש חדר שינה, ולפי התרשים המיטה צמודה לקיר. המכונות על הקיר הזה יעבירו רעש ורעידות בסחיטה, ולכן צריך רגליות בולמות ובידוד אקוסטי.", "מכונת הכביסה על הרצפה (כפיפה), ופתח המייבש בגובה כ-135 ס״מ, כלומר פריקה בגובה החזה.",
             "צריך ערכת חיבור (stacking kit) ומכונות שמתאימות לה.",
             "הארון שמעל המגדל נמוך וגבוה מאוד."],
            D_vol),
 ])
 
-v = {k: x for k, x in zip("eabcd", (E_vol, A_vol, B_vol, C_vol, D_vol))}
+v = {k: x for k, x in zip("feabcd", (F_vol, E_vol, A_vol, B_vol, C_vol, D_vol))}
 best = max(v, key=lambda k: v[k][1])
 worst = min(v, key=lambda k: v[k][1])
-VOL_ROW = "".join(f'<td class="num{" best" if k == best else " weak" if k == worst else ""}">{approx(v[k][1])} ל׳</td>' for k in "eabcd")
-HARD_ROW = "".join(f'<td class="num">{approx(v[k][2])} ל׳</td>' for k in "eabcd")
+VOL_ROW = "".join(f'<td class="num{" best" if k == best else " weak" if k == worst else ""}">{approx(v[k][1])} ל׳</td>' for k in "feabcd")
+HARD_ROW = "".join(f'<td class="num">{approx(v[k][2])} ל׳</td>' for k in "feabcd")
 
 VIEW3D = '''
   <section class="sheet" id="view3d">
     <h2>הדמיה תלת-ממדית</h2>
     <div class="v3-bar">
       <div class="seg" role="group" aria-label="חלופה">
-        <button type="button" id="v3-e" data-opt="e" aria-pressed="true">ה׳ ב׳ משודרגת</button>
+        <button type="button" id="v3-f" data-opt="f" aria-pressed="true">ו׳ קיר שמאל</button>
+        <button type="button" id="v3-e" data-opt="e" aria-pressed="false">ה׳ ב׳ משודרגת</button>
         <button type="button" id="v3-a" data-opt="a" aria-pressed="false">א׳ גלריה</button>
         <button type="button" id="v3-b" data-opt="b" aria-pressed="false">ב׳ מול הדלת</button>
         <button type="button" id="v3-c" data-opt="c" aria-pressed="false">ג׳ מתחת למשטח</button>
@@ -776,7 +866,7 @@ JS3D = r'''
     const glass = new THREE.Mesh(new THREE.CircleGeometry(15.5, 40), glassMat);
     g.add(ring, glass);
     g.position.copy(P(cx, cy, cz));
-    if (face === 'x-') { g.rotation.y = -Math.PI / 2; g.position.x -= 1.2; } else { g.position.z += 1.2; }
+    if (face === 'x-') { g.rotation.y = -Math.PI / 2; g.position.x -= 1.2; } else if (face === 'x+') { g.rotation.y = Math.PI / 2; g.position.x += 1.2; } else { g.position.z += 1.2; }
     return g;
   }
   const personMat = new THREE.MeshStandardMaterial({ color: 0x8e9b97, roughness: 0.9, transparent: true, opacity: 0.6 });
@@ -791,7 +881,7 @@ JS3D = r'''
     return g;
   }
 
-  let group = null, personObj = null, current = 'e';
+  let group = null, personObj = null, current = 'f';
   const personToggle = document.getElementById('v3-person');
   const hideUpper = document.getElementById('v3-upper');
   function build(opt) {
@@ -819,9 +909,14 @@ JS3D = r'''
     corner: [[-320, 300, 320], [25, 80, -15]],
     top: [[0, 640, 40], [0, 0, 0]],
   };
+  // machines on the left wall (option F) are seen from the right side
+  const MIRROR = { f: true };
+  let lastCam = 'door';
   function setCam(name) {
-    const [p, t] = CAMS[name];
-    camera.position.set(p[0], p[1], p[2]); controls.target.set(t[0], t[1], t[2]); controls.update();
+    lastCam = name;
+    const special = current === 'f' && name === 'corner';
+    const [p, t] = special ? [[150, 290, -400], [-25, 80, 10]] : CAMS[name], m = MIRROR[current] && !special ? -1 : 1;
+    camera.position.set(p[0] * m, p[1], p[2]); controls.target.set(t[0] * m, t[1], t[2]); controls.update();
   }
 
   function themeBg() {
@@ -842,13 +937,13 @@ JS3D = r'''
   new ResizeObserver(resize).observe(box);
   resize();
 
-  document.querySelectorAll('#view3d [data-opt]').forEach(b => b.addEventListener('click', () => build(b.dataset.opt)));
+  document.querySelectorAll('#view3d [data-opt]').forEach(b => b.addEventListener('click', () => { build(b.dataset.opt); setCam(lastCam); }));
   document.querySelectorAll('#view3d [data-cam]').forEach(b => b.addEventListener('click', () => setCam(b.dataset.cam)));
-  document.querySelectorAll('a.to3d').forEach(a => a.addEventListener('click', () => build(a.dataset.opt)));
+  document.querySelectorAll('a.to3d').forEach(a => a.addEventListener('click', () => { build(a.dataset.opt); setCam(lastCam); }));
   personToggle.addEventListener('change', () => { if (personObj) personObj.visible = personToggle.checked; });
   hideUpper.addEventListener('change', () => group.children.forEach(m => { if (m.userData.upper) m.visible = !hideUpper.checked; }));
 
-  build('e'); setCam('door');
+  build('f'); setCam('door');
   (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
 })();
 </script>'''.replace("__SCENES__", SCENES)
@@ -991,14 +1086,14 @@ details[open] summary {{ margin-bottom: 8px; }}
 <main dir="rtl" lang="he">
   <header style="display:grid;gap:10px">
     <h1>תכנון חדר הכביסה</h1>
-    <p class="lede">חדר נטו <span class="mono">214×274</span> ס״מ (5.86 מ״ר), תקרה <span class="mono">247</span>. חמש חלופות סידור, כולן משורטטות בקנה מידה ומוצגות גם בהדמיה תלת-ממדית, עם מעלות, חסרונות ונפח אחסון.</p>
+    <p class="lede">חדר נטו <span class="mono">214×274</span> ס״מ (5.86 מ״ר), תקרה <span class="mono">247</span>. שש חלופות סידור, כולן משורטטות בקנה מידה ומוצגות גם בהדמיה תלת-ממדית, עם מעלות, חסרונות ונפח אחסון.</p>
   </header>
 
-  <div class="rec"><p><b>ההמלצה: חלופה ה׳ (ב׳ משודרגת, ההצעה שלך).</b> המכונות מוגבהות על הקיר האחורי עם 130 ס״מ פנויים מולן. המקפיא מימין לדלת, ולאורך כל הקיר הימני יש יחידה רציפה של משטח, 3 סלים וארונות עד התקרה.
-  נפח האחסון הכולל ({approx(E_vol[1])} ליטר) זהה כמעט לחלופה א׳, ושתיהן מובילות. חלק גדול ממנו בפינות שהגישה אליהן פחות נוחה, וזה מתאים למזוודות ולציוד עונתי.
-  אם חשוב לך יותר אחסון בגישה נוחה ומשטח ארוך יותר, ומוכן לוותר על מרווח, חלופה א׳ עדיפה.</p></div>
+  <div class="rec"><p><b>ההמלצה: חלופה ו׳ (מכונות על הקיר השמאלי).</b> המכונות מוגבהות על הקיר שמשותף למטבח, רחוק מהמיטה בחדר השינה שמעבר לקיר הימני. מולן יש משטח של 194 ס״מ עם 3 סלים, ובפינה ליד הדלת ארון גבוה.
+  היא נותנת את האחסון הרב ביותר בגישה נוחה ({approx(F_vol[1] - F_vol[2])} ליטר מתוך {approx(F_vol[1])}).
+  אם חשוב לך יותר מרחב מול המכונות (130 ס״מ במקום 92), ואתה מוכן שחלק גדול מהאחסון יהיה בפינות עיוורות, חלופה ה׳ עדיפה.</p></div>
 
-  <nav aria-label="תוכן"><a href="#view3d">הדמיה תלת-ממדית</a><a href="#basis">נתונים</a><a href="#height">גובה ההגבהה</a><a href="#e">ה׳ ב׳ משודרגת</a><a href="#a">א׳ גלריה</a><a href="#b">ב׳ מול הדלת</a><a href="#c">ג׳ מתחת למשטח</a><a href="#d">ד׳ מגדל</a><a href="#compare">השוואה</a><a href="#build">ביצוע</a></nav>
+  <nav aria-label="תוכן"><a href="#view3d">הדמיה תלת-ממדית</a><a href="#basis">נתונים</a><a href="#height">גובה ההגבהה</a><a href="#f">ו׳ קיר שמאל</a><a href="#e">ה׳ ב׳ משודרגת</a><a href="#a">א׳ גלריה</a><a href="#b">ב׳ מול הדלת</a><a href="#c">ג׳ מתחת למשטח</a><a href="#d">ד׳ מגדל</a><a href="#compare">השוואה</a><a href="#build">ביצוע</a></nav>
 
   {VIEW3D}
 
@@ -1039,16 +1134,17 @@ details[open] summary {{ margin-bottom: 8px; }}
   <section class="sheet" id="compare">
     <h2>השוואה</h2>
     <div class="scroll"><table class="cmp">
-      <thead><tr><th></th><th>ה׳ ב׳ משודרגת</th><th>א׳ גלריה</th><th>ב׳ מול הדלת</th><th>ג׳ מתחת למשטח</th><th>ד׳ מגדל</th></tr></thead>
+      <thead><tr><th></th><th>ו׳ קיר שמאל</th><th>ה׳ ב׳ משודרגת</th><th>א׳ גלריה</th><th>ב׳ מול הדלת</th><th>ג׳ מתחת למשטח</th><th>ד׳ מגדל</th></tr></thead>
       <tbody>
-        <tr><td>סידור המכונות</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="weak">על הרצפה</td><td class="weak">זו מעל זו</td></tr>
-        <tr><td>מרווח מול המכונות</td><td class="num">130</td><td class="num">92</td><td class="num best">142</td><td class="num">102</td><td class="num">102</td></tr>
-        <tr><td>משטח קיפול</td><td class="num">130×60 + קצוות</td><td class="num">212×50 (+20)</td><td class="num">134×60</td><td class="num best">208×72</td><td class="num">140×64</td></tr>
-        <tr><td>סלים במקום ייעודי</td><td>3</td><td>3, אפשר 4</td><td>3</td><td>2+1 בארון</td><td>3</td></tr>
+        <tr><td>סידור המכונות</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="best">מוגבהות זו לצד זו</td><td class="weak">על הרצפה</td><td class="weak">זו מעל זו</td></tr>
+        <tr><td>מרווח מול המכונות</td><td class="num">92 (97 עם ארגז שקוע)</td><td class="num">130</td><td class="num">92</td><td class="num best">142</td><td class="num">102</td><td class="num">102</td></tr>
+        <tr><td>משטח קיפול</td><td class="num">194×50 (+20)</td><td class="num">130×60 + קצוות</td><td class="num">212×50 (+20)</td><td class="num">134×60</td><td class="num best">208×72</td><td class="num">140×64</td></tr>
+        <tr><td>סלים במקום ייעודי</td><td>3</td><td>3</td><td>3, אפשר 4</td><td>3</td><td>2+1 בארון</td><td>3</td></tr>
         <tr><td>נפח אחסון משוער</td>{VOL_ROW}</tr>
         <tr><td>מתוכו בגישה פחות נוחה</td>{HARD_ROW}</tr>
-        <tr><td>תחושת מרחב</td><td class="best">גבוהה</td><td>בינונית</td><td class="best">גבוהה</td><td>טובה</td><td>טובה</td></tr>
-        <tr><td>מורכבות ועלות נגרות</td><td>בינונית-גבוהה</td><td>בינונית-גבוהה</td><td>בינונית</td><td class="best">נמוכה</td><td>בינונית</td></tr>
+        <tr><td>מכונות על קיר חדר השינה</td><td class="best">לא</td><td class="best">לא</td><td class="weak">כן</td><td class="best">לא</td><td class="weak">כן</td><td class="weak">כן</td></tr>
+        <tr><td>תחושת מרחב</td><td>בינונית</td><td class="best">גבוהה</td><td>בינונית</td><td class="best">גבוהה</td><td>טובה</td><td>טובה</td></tr>
+        <tr><td>מורכבות ועלות נגרות</td><td>בינונית-גבוהה</td><td>בינונית-גבוהה</td><td>בינונית-גבוהה</td><td>בינונית</td><td class="best">נמוכה</td><td>בינונית</td></tr>
       </tbody></table></div>
     <p class="src">הנפחים הם ברוטו (מידות חוץ של הארונות), ומיועדים להשוואה בין החלופות. הנפח השימושי יהיה קטן בכ-15–20%.</p>
   </section>
